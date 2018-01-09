@@ -1,0 +1,15 @@
+#create a csv file with plate layout, add the layout to the actual data with plater, plate layout name = future column name (Sample)#
+
+library("plater", lib.loc="~/R/R-3.4.1/library")
+with_sample <- add_plate(b, "C:\\Users\\rwang23\\Documents\\Book1.csv", "Plate.A")             #"Plate.A" = column name: A1, A2... # 
+
+library("dplyr")
+
+# remove plate B #
+with_sample %>% 
+  filter(Plate != "B")          #equivolent to filter(with_sample, Plate != "B")#
+
+averaged <- with_sample %>% 
+  filter(Plate != "B") %>% 
+  group_by(Sample) %>% 
+  summarize(Zika = mean(ZKV), RPP30 = mean(RPP30))
