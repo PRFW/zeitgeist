@@ -122,7 +122,9 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 multiplot(a, b, c, d, cols=2)
 
-### see details about changing shapes and stuff at: www.sthda.com/english/wiki/ggplot2-point-shapes ###
+### see details about changing shapes and stuff at: www.sthda.com/english/wiki/ggplot2-point-shapes 
+http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
+###
 
 
 
