@@ -79,21 +79,29 @@ comp2 <- filter(comp, tp != "24 hr" & tp != "3 hr")
 
 comp2wide <- tidyr::spread(comp2, assay, value)
 
-e <- ggplot(comp2wide, aes(plaque, ddpcr)) +
+e<- ggplot(comp2wide, aes(plaque, ddpcr)) +
   geom_point(aes(col = sample)) +
+  geom_smooth(method = "lm")+
   scale_x_log10()+
-  scale_y_log10()+
-  geom_smooth(method = "lm")
-  
+  scale_y_log10()
+
+
+### without 3 hrs time point ###
 comp3 <- filter(comp, tp != "3 hr")
 comp3wide <- tidyr::spread(comp3, assay, value)
 
 f<-  ggplot(comp3wide, aes(plaque, ddpcr)) +
-  geom_point(aes(col = sample)) +
+  geom_point(aes(col = sample, shape = tp)) +
   scale_x_log10()+
   scale_y_log10()+
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm")+
+  ggtitle("Plaque Assay vs ddPCR Correlation") +
+  xlab("PFU)") +
+  ylab("ZIKA RNA copies")+
+  theme(plot.title = element_text(hjust = 0.5)) +
+  annotate("text", x = 100, y = 20000000, hjust = 0, label = "Pearson's R = 0.6186862\np-value = 0.0002681", size = 3)
 
+### all ###
 comp4wide <- tidyr::spread(comp, assay, value)
 
 g<-  ggplot(comp4wide, aes(plaque, ddpcr)) +
@@ -101,42 +109,6 @@ g<-  ggplot(comp4wide, aes(plaque, ddpcr)) +
   scale_x_log10()+
   scale_y_log10()+
   geom_smooth(method = "lm")
-
-
-#Pearson's product-moment correlation e
-#data:  comp2wide$plaque and comp2wide$ddpcr
-#t = -0.066919, df = 20, p-value = 0.9473
-#alternative hypothesis: true correlation is not equal to 0
-#95 percent confidence interval:
-#-0.4338337  0.4092280
-#sample estimates:
-#cor 
-#-0.01496187 
-
-#Pearson's product-moment correlation f
-
-#data:  comp3wide$plaque and comp3wide$ddpcr
-#t = 0.38391, df = 28, p-value = 0.7039
-#alternative hypothesis: true correlation is not equal to 0
-#95 percent confidence interval:
-#  -0.2956133  0.4216396
-#sample estimates:
-#  cor 
-#0.07236251 
-
-#Pearson's product-moment correlation g
-
-#data:  comp4wide$plaque and comp4wide$ddpcr
-#t = 0.68957, df = 36, p-value = 0.4949
-#alternative hypothesis: true correlation is not equal to 0
-#95 percent confidence interval:
-#-0.2132925  0.4185811
-#sample estimates:
-#cor 
-#0.1141761
-
-
-
 
 
 
