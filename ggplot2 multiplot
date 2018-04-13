@@ -87,8 +87,10 @@ e<- ggplot(comp2wide, aes(plaque, ddpcr)) +
 
 
 ### without 3 hrs time point ###
+
 comp3 <- filter(comp, tp != "3 hr")
 comp3wide <- tidyr::spread(comp3, assay, value)
+comp3wide$tp <- factor(comp3wide$tp, levels = c("24 hr", "48 hr", "72 hr", "144 hr"))
 
 f<-  ggplot(comp3wide, aes(plaque, ddpcr)) +
   geom_point(aes(col = sample, shape = tp)) +
