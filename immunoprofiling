@@ -1,0 +1,57 @@
+plate_1_raw <- read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 1.csv")
+plate_2_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 2.csv")
+plate_3_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 3.csv")
+plate_4_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 4.csv")
+plate_5_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 5.csv")
+plate_6_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 6.csv")
+
+library(dplyr)
+
+all_plates_raw <-bind_rows(plate_1_raw, plate_2_raw, plate_3_raw, plate_4_raw, plate_5_raw, plate_6_raw)
+
+all_plates_raw$CT <- as.numeric(all_plates_raw$CT)
+
+
+averaged_all <- all_plates_raw %>%
+  group_by(Sample.Name, Target.Name) %>%
+  summarize(averaged_CT = mean(CT))
+
+housekeeper <- averaged_all %>%
+  filter(Target.Name %in% c("GAPDH","18s rRNA", "GUSB", "HPRT")) %>%
+  group_by(Sample.Name) %>%
+  summarize(HKGeomean = mean(averaged_CT))
+
+averaged_all_without_HK <- averaged_all %>%
+  filter(Target.Name != "GAPDH",Target.Name != "18s rRNA", Target.Name !="GUSB", Target.Name !="HPRT")
+
+averaged_all_add_HK <-merge(averaged_all_without_HK, housekeeper, by = "Sample.Name")
+
+averaged_all_add_HK$deltaCT<- averaged_all_add_HK$averaged_CT - averaged_all_add_HK$HKGeomean
+
+averaged_all_add_HK_sep<- tidyr::separate(averaged_all_add_HK, Sample.Name, into = c("treatment", "cell_line", "donor", "timepoint", "hrs"), sep =" " , remove = F)
+
+
+split_mock <-  averaged_all_add_HK_sep[1:108,]
+split_ZIKA <- averaged_all_add_HK_sep[109:216,]
+
+mergeddct <- merge(split_ZIKA, split_mock, by = c("cell_line", "donor", "timepoint", "hrs", "Target.Name"))
+
+mergeddct$ddCT <- mergeddct$deltaCT.x - mergeddct$deltaCT.y
+
+mergeddct$foldchange <- 2^-(mergeddct$ddCT)
+
+plot_data <- mergeddct[,c(6,1,2,3,4,5,17)]
+
+plot_data <- plot_data %>%
+  filter(Target.Name != "IL10")
+
+
+library(ggplot2)
+
+ggplot(plot_data, aes(Target.Name, foldchange, shape = timepoint, col = cell_line))+
+  geom_point()+
+  scale_y_log10()
+
+
+write.csv(mergeddct, file = "profiling_data.csv")     ### export data frame as csv###
+
