@@ -6,10 +6,11 @@ plate_5_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 5.csv
 plate_6_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 6.csv")
 
 library(dplyr)
-
 all_plates_raw <-bind_rows(plate_1_raw, plate_2_raw, plate_3_raw, plate_4_raw, plate_5_raw, plate_6_raw)
 
 all_plates_raw$CT <- as.numeric(all_plates_raw$CT)
+
+
 
 
 averaged_all <- all_plates_raw %>%
@@ -53,5 +54,93 @@ ggplot(plot_data, aes(Target.Name, foldchange, shape = timepoint, col = cell_lin
   scale_y_log10()
 
 
-write.csv(mergeddct, file = "profiling_data.csv")     ### export data frame as csv###
+##Heat map test##
+
+library(reshape2)
+library(viridisLite)
+
+
+### https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html ###
+###http://slowkow.com/notes/heatmap-tutorial/###
+
+dat1<- filter(plot_data, timepoint == "72")
+
+dat1<- dat1[,c(1,6,7)]
+  
+dat2 <- tidyr::spread(dat1, Sample.Name.x ,foldchange)
+
+dat2 <- data.frame(dat2[,-1],row.names = dat2[,1])
+
+dat2 <- as.matrix(dat2)
+
+
+pheatmap::pheatmap(mat = log10(dat2),
+                   border_color = NA,
+                   color = inferno(100),
+                   cluster_rows = FALSE, 
+                   cluster_cols = FALSE)
+
+
+dat24 <-  filter(plot_data, timepoint == "24")
+dat24<- dat24[,c(1,6,7)]
+dat24 <- tidyr::spread(dat24, Sample.Name.x ,foldchange)
+dat24 <- data.frame(dat24[,-1],row.names = dat24[,1])
+dat24 <- as.matrix(dat24)
+
+pheatmap::pheatmap(mat = log10(dat24),
+                   border_color = NA,
+                   color = inferno(100),
+                   cluster_rows = FALSE, 
+                   cluster_cols = FALSE)
+
+data_total <- plot_data[,c(1,6,7)]
+data_total <- tidyr::spread(data_total, Sample.Name.x ,foldchange)
+data_total <- data.frame(data_total[,-1],row.names = data_total[,1])
+
+data_total <- dplyr::rename(data_total, Ecto_423_72_HRS = ZIKA.ECTO.423.72.HRS,
+              Ecto_439_24_HRS = ZIKA.ECTO.439.24.HRS,
+              Ecto_439_24_HRS_2 = ZIKA.ECTO.439.24.HRS_2,
+              Ecto_439_72_HRS = ZIKA.ECTO.439.72.HRS,
+              Endo_411_72_HRS = ZIKA.ENDO.411.72.HRS,
+              Endo_427_72_HRS = ZIKA.ENDO.427.72.HRS,
+              Vag_246_72_HRS = ZIKA.VAG.246.72.HRS,
+              Vag_429_24_HRS = ZIKA.VAG.429.24.HRS,
+              Vag_429_72_HRS = ZIKA.VAG.429.72.HRS)
+
+
+data_total <- data_total[c(2,3,8,9,7,4,1,5,6)]
+data_total <- data_total[c(2,3,4,7,11,5,8,6,9,10,1),]
+
+
+
+data_total <- as.matrix(data_total)
+
+
+
+
+pheatmap::pheatmap(mat = log2(data_total),
+                   border_color = NA,
+                   color = inferno(100),
+                   main = "Cytokine Expression Change Post Zika Infection [log2]",
+                   cluster_rows = FALSE, 
+                   cluster_cols = FALSE)
+
+data_total_1 <- data_total[,2:9]
+data_total_1 <-as.data.frame(data_total_1)
+data_total_1 <-dplyr::rename(data_total_1, Ecto_439_24_HRS = Ecto_439_24_HRS_2)
+
+
+
+data_total_1 <-data_total_1[c(2,1,5,7,3,6,8,4)]
+
+data_total_1 <-as.matrix(data_total_1)
+
+pheatmap::pheatmap(mat = log2(data_total_1),
+                   border_color = NA,
+                   color = inferno(100),
+                   cluster_rows = FALSE, 
+                   cluster_cols = FALSE)
+
+
+
 
