@@ -10,9 +10,6 @@ all_plates_raw <-bind_rows(plate_1_raw, plate_2_raw, plate_3_raw, plate_4_raw, p
 
 all_plates_raw$CT <- as.numeric(all_plates_raw$CT)
 
-
-
-
 averaged_all <- all_plates_raw %>%
   group_by(Sample.Name, Target.Name) %>%
   summarize(averaged_CT = mean(CT))
@@ -47,13 +44,6 @@ plot_data <- plot_data %>%
   filter(Target.Name != "IL10")
 
 
-library(ggplot2)
-
-ggplot(plot_data, aes(Target.Name, foldchange, shape = timepoint, col = cell_line))+
-  geom_point()+
-  scale_y_log10()
-
-
 ##Heat map test##
 
 library(reshape2)
@@ -74,12 +64,12 @@ dat2 <- data.frame(dat2[,-1],row.names = dat2[,1])
 dat2 <- as.matrix(dat2)
 
 
+### heatmap 72 hrs only###
 pheatmap::pheatmap(mat = log10(dat2),
                    border_color = NA,
                    color = inferno(100),
                    cluster_rows = FALSE, 
                    cluster_cols = FALSE)
-
 
 dat24 <-  filter(plot_data, timepoint == "24")
 dat24<- dat24[,c(1,6,7)]
@@ -87,6 +77,9 @@ dat24 <- tidyr::spread(dat24, Sample.Name.x ,foldchange)
 dat24 <- data.frame(dat24[,-1],row.names = dat24[,1])
 dat24 <- as.matrix(dat24)
 
+
+
+###heatmap 24 hrs only###
 pheatmap::pheatmap(mat = log10(dat24),
                    border_color = NA,
                    color = inferno(100),
@@ -97,6 +90,8 @@ data_total <- plot_data[,c(1,6,7)]
 data_total <- tidyr::spread(data_total, Sample.Name.x ,foldchange)
 data_total <- data.frame(data_total[,-1],row.names = data_total[,1])
 
+
+###rename###
 data_total <- dplyr::rename(data_total, Ecto_423_72_HRS = ZIKA.ECTO.423.72.HRS,
               Ecto_439_24_HRS = ZIKA.ECTO.439.24.HRS,
               Ecto_439_24_HRS_2 = ZIKA.ECTO.439.24.HRS_2,
@@ -107,24 +102,21 @@ data_total <- dplyr::rename(data_total, Ecto_423_72_HRS = ZIKA.ECTO.423.72.HRS,
               Vag_429_24_HRS = ZIKA.VAG.429.24.HRS,
               Vag_429_72_HRS = ZIKA.VAG.429.72.HRS)
 
-
+###rearrange position###
 data_total <- data_total[c(2,3,8,9,7,4,1,5,6)]
 data_total <- data_total[c(2,3,4,7,11,5,8,6,9,10,1),]
 
 
-
 data_total <- as.matrix(data_total)
 
-
-
-
+###heatmap total###
 pheatmap::pheatmap(mat = log2(data_total),
                    border_color = NA,
                    color = inferno(100),
-                   main = "Cytokine Expression Change Post Zika Infection [log2]",
                    cluster_rows = FALSE, 
                    cluster_cols = FALSE)
 
+###drop duplicated sample###
 data_total_1 <- data_total[,2:9]
 data_total_1 <-as.data.frame(data_total_1)
 data_total_1 <-dplyr::rename(data_total_1, Ecto_439_24_HRS = Ecto_439_24_HRS_2)
@@ -141,6 +133,71 @@ pheatmap::pheatmap(mat = log2(data_total_1),
                    cluster_rows = FALSE, 
                    cluster_cols = FALSE)
 
+
+###ADD TNF AND IL1A ###
+a <- read.csv("C:\\Users\\ruofaw\\Desktop\\TNF\\il1a_tnfa.csv")
+
+a <- plater::add_plate(a, "C:\\Users\\ruofaw\\Desktop\\TNF\\plate.csv", "Well.Position")
+
+library(dplyr)
+
+a$CT <- as.numeric(as.character(a$CT))
+
+b <- a %>%
+  group_by(tissue, Sample.Name, Target.Name) %>%
+  summarise(CT = mean(CT))
+
+b[17,4] <- 35.972
+b[3,4] <- 32.134
+
+cz <- b %>%
+  filter(Sample.Name == "ZIKA")
+cm <- b %>%
+  filter(Sample.Name == "MOCK")
+
+c <- cbind(cz, cm)
+
+c$HKgeomean_zika <- c(20.585125, 20.585125, 21.633625, 21.633625, 22.002125, 22.002125, 20.8675, 20.8675, 20.8145, 20.8145)
+c$HKgeomean_mock <- c(20.5245, 20.5245, 21.573, 21.573, 21.086125, 21.086125, 20.55025, 20.55025, 20.271875, 20.271875)
+
+c$dCTZ <- c$CT - c$HKgeomean_zika
+c$dCTM <- c$CT1 - c$HKgeomean_mock
+
+c$ddCT <- c$dCTZ - c$dCTM
+
+c$fold_change <- 2^(-c$ddCT)
+
+library(ggplot2)
+
+c[9,1] <- "Vag 429"
+c[10,1] <- "Vag 429"
+
+ggplot(c, aes(tissue, fold_change)) +
+  geom_point(aes(col = Target.Name))
+
+d <- c[c(1,3,14)]
+
+d <- tidyr::spread(d, tissue, fold_change)
+
+d <-data.frame(d)
+d <- data.frame(d[,-1], row.names = d[,1])
+
+colnames(d) <- c("Ecto_423_72_HRS", "Endo_411_72_HRS", "Endo_427_72_HRS", "Vag_246_72_HRS", "Vag_429_72_HRS")
+
+data_combine <- data.frame(data_total_1)
+
+data_combine2 <- bind_rows(data_combine, d)
+
+row.names(data_combine2) <- c("CCL5","CXCL10","CXCL11","IFNB1","IRF7","CXCL9","IFNL2","IFNA1","IL1B","IL1RN","CCL2", "IL1A","TNF")
+
+data_combine2 <- as.matrix(data_combine2)
+
+
+pheatmap::pheatmap(mat = log2(data_combine2),
+                   border_color = NA,
+                   color = inferno(100),
+                   cluster_rows = FALSE, 
+                   cluster_cols = FALSE)
 
 
 
