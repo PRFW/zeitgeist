@@ -1,7 +1,11 @@
-#create a csv file with plate layout, add the layout to the actual data with plater, plate layout name = future column name (Sample)#
+### create a csv file with plate layout, add the layout to the actual data with plater, plate layout name = future column name ###
 
-library("plater", lib.loc="~/R/R-3.4.1/library")
-with_sample <- add_plate(b, "C:\\Users\\rwang23\\Documents\\Book1.csv", "Plate.A")             #"Plate.A" = column name: A1, A2... # 
+library("plater")
+with_sample <- add_plate(data, "C:\\Users\\rwang23\\Documents\\Book1.csv", "column name for the wells")      
+
+
+
+
 
 library("dplyr")
 
