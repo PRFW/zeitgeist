@@ -3,7 +3,16 @@ SEZIKA <- read.csv("C:\\Users\\ruofaw\\Desktop\\SE + ZIKA\\050918.csv")
 ZIKA <- SEZIKA[1:64,]
 RPP30 <- SEZIKA[65:128,]
 
+
+
+### MERGER TWO DOCUMENTS BY SHARED COLUMN ###
 merged <- merge(ZIKA, RPP30, by = "Well")
+
+
+
+
+
+###CHANGE COLUMN NAME###
 
 colnames(merged)[4]<- "ZIKA per 20 uL Well"
 colnames(merged)[7]<- "RPP30 per 20 uL Well"
