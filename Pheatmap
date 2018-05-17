@@ -1,9 +1,9 @@
-plate_1_raw <- read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 1.csv")
-plate_2_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 2.csv")
-plate_3_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 3.csv")
-plate_4_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 4.csv")
-plate_5_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 5.csv")
-plate_6_raw <-read.csv("C:\\Users\\ruofaw\\Desktop\\Immunoprofiling\\Plate 6.csv")
+plate_1_raw <- read.csv("E:\\code\\Immunoprofiling\\Plate 1.csv")
+plate_2_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 2.csv")
+plate_3_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 3.csv")
+plate_4_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 4.csv")
+plate_5_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 5.csv")
+plate_6_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 6.csv")
 
 library(dplyr)
 all_plates_raw <-bind_rows(plate_1_raw, plate_2_raw, plate_3_raw, plate_4_raw, plate_5_raw, plate_6_raw)
@@ -65,6 +65,8 @@ dat2 <- as.matrix(dat2)
 
 
 ### heatmap 72 hrs only###
+library(pheatmap)
+
 pheatmap::pheatmap(mat = log10(dat2),
                    border_color = NA,
                    color = inferno(100),
@@ -135,9 +137,9 @@ pheatmap::pheatmap(mat = log2(data_total_1),
 
 
 ###ADD TNF AND IL1A ###
-a <- read.csv("C:\\Users\\ruofaw\\Desktop\\TNF\\il1a_tnfa.csv")
+a <- read.csv("E:\\code\\TNF\\il1a_tnfa.csv")
 
-a <- plater::add_plate(a, "C:\\Users\\ruofaw\\Desktop\\TNF\\plate.csv", "Well.Position")
+a <- plater::add_plate(a, "E:\\code\\TNF\\plate.csv", "Well.Position")
 
 library(dplyr)
 
@@ -198,6 +200,58 @@ pheatmap::pheatmap(mat = log2(data_combine2),
                    color = inferno(100),
                    cluster_rows = FALSE, 
                    cluster_cols = FALSE)
+
+data_wo_24 <- data_combine2[,3:8]
+data_rearranged <- data_wo_24[,c(2,5,1,4,3,6)]
+
+data_rearranged <- data.frame(data_rearranged)
+
+data_rearranged$HSV_Vaginal_8hrs <- c(1.085693, 0.992858, 0.983455503, NA,0.94056304,NA,NA,NA,1.436835013,0.555808846,NA,10.73432748,NA)
+
+
+colnames(data_rearranged) <- c("Endo 411", "Endo 427", "Ecto 439", "Ecto 423", "Vag 429", "Vag 246", "Vag pool")
+
+data_rearranged <- as.matrix(data_rearranged)
+
+
+
+
+
+rowname <- colnames(data_rearranged)
+
+annotate_col <- data.frame(Infection = c(rep("ZIKA 72 hrs", times = 6), "HSV2 8 hrs"), Cell_Type = c("Endocervical","Endocervical","Ectocervical","Ectocervical","Vaginal","Vaginal","Vaginal") )
+
+rownames(annotate_col) = colnames(data_rearranged)
+
+
+ann_colors = list(
+  Infection = c(`ZIKA 72 hrs` = "#1B9E77", `HSV2 8 hrs` = "#D95F02"),
+  Cell_Type = c(Endocervical = "#66c2a5", Ectocervical = "#fc8d62", Vaginal = "#8da0cb"))
+
+tiff('test.tiff', width = 6, height = 5,unit = "in", res = 300)
+pheatmap::pheatmap(mat = log2(data_rearranged),
+                   border_color = NA,
+                   color = inferno(100),
+                   cluster_rows = F, 
+                   cluster_cols = F,
+                   annotation_col = annotate_col,
+                   annotation_colors = ann_colors)
+
+dev.off() 
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
 
 
 
