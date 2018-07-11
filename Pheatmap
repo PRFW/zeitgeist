@@ -239,7 +239,8 @@ pheatmap::pheatmap(mat = log2(data_rearranged),
                    cluster_rows = F, 
                    cluster_cols = F,
                    annotation_col = annotate_col,
-                   annotation_colors = ann_colors)
+                   annotation_colors = ann_colors,
+                   breaks = seq(-3, 10,length.out=101))
 
 dev.off()   ### make sure the device is not turned off otherwise the plot wouldn't show sometimes ###
 
