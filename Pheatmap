@@ -1,11 +1,13 @@
-plate_1_raw <- read.csv("E:\\code\\Immunoprofiling\\Plate 1.csv")
-plate_2_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 2.csv")
-plate_3_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 3.csv")
-plate_4_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 4.csv")
-plate_5_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 5.csv")
-plate_6_raw <-read.csv("E:\\code\\Immunoprofiling\\Plate 6.csv")
+plate_1_raw <- read.csv("D:\\code\\Immunoprofiling\\Plate 1.csv")
+plate_2_raw <-read.csv("D:\\code\\Immunoprofiling\\Plate 2.csv")
+plate_3_raw <-read.csv("D:\\code\\Immunoprofiling\\Plate 3.csv")
+plate_4_raw <-read.csv("D:\\code\\Immunoprofiling\\Plate 4.csv")
+plate_5_raw <-read.csv("D:\\code\\Immunoprofiling\\Plate 5.csv")
+plate_6_raw <-read.csv("D:\\code\\Immunoprofiling\\Plate 6.csv")
 
 library(dplyr)
+library(EnvStats)
+
 all_plates_raw <-bind_rows(plate_1_raw, plate_2_raw, plate_3_raw, plate_4_raw, plate_5_raw, plate_6_raw)
 
 all_plates_raw$CT <- as.numeric(all_plates_raw$CT)
@@ -17,7 +19,7 @@ averaged_all <- all_plates_raw %>%
 housekeeper <- averaged_all %>%
   filter(Target.Name %in% c("GAPDH","18s rRNA", "GUSB", "HPRT")) %>%
   group_by(Sample.Name) %>%
-  summarize(HKGeomean = mean(averaged_CT))
+  summarize(HKGeomean = geoMean(averaged_CT))
 
 averaged_all_without_HK <- averaged_all %>%
   filter(Target.Name != "GAPDH",Target.Name != "18s rRNA", Target.Name !="GUSB", Target.Name !="HPRT")
@@ -137,9 +139,9 @@ pheatmap::pheatmap(mat = log2(data_total_1),
 
 
 ###ADD TNF AND IL1A ###
-a <- read.csv("E:\\code\\TNF\\il1a_tnfa.csv")
+a <- read.csv("D:\\code\\TNF\\il1a_tnfa.csv")
 
-a <- plater::add_plate(a, "E:\\code\\TNF\\plate.csv", "Well.Position")
+a <- plater::add_plate(a, "D:\\code\\TNF\\plate.csv", "Well.Position")
 
 library(dplyr)
 
@@ -213,8 +215,9 @@ colnames(data_rearranged) <- c("Endo 411", "Endo 427", "Ecto 439", "Ecto 423", "
 
 data_rearranged <- as.matrix(data_rearranged)
 
-
-
+###see exel for calculation###
+data_rearranged[12,3] <- 2.3021806140522
+data_rearranged[13,3] <- 2.25479985844315
 
 
 rowname <- colnames(data_rearranged)
@@ -229,6 +232,7 @@ ann_colors = list(
   Cell_Type = c(Endocervical = "#66c2a5", Ectocervical = "#fc8d62", Vaginal = "#8da0cb"))
 
 tiff('test.tiff', width = 6, height = 5,unit = "in", res = 300)
+
 pheatmap::pheatmap(mat = log2(data_rearranged),
                    border_color = NA,
                    color = inferno(100),
@@ -237,19 +241,7 @@ pheatmap::pheatmap(mat = log2(data_rearranged),
                    annotation_col = annotate_col,
                    annotation_colors = ann_colors)
 
-dev.off() 
-
-
-
-
- 
-
-
-
-
-
-
-
+dev.off()   ### make sure the device is not turned off otherwise the plot wouldn't show sometimes ###
 
 
 
