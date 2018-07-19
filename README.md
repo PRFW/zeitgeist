@@ -1,2 +1,0 @@
-# zeitgeist
-ZIKA PROJECT DATA ANALYSIS
